@@ -1,0 +1,399 @@
+/**
+ * 태블릿(iPad 등) 레이아웃. 모바일 규칙은 그대로 두고 태블릿 배치일 때만 덮어씀.
+ * 적용 여부는 LayoutModeSync(hooks/useMediaQuery.ts)가 <html> 속성으로 정함:
+ *  - data-tablet: 설정 '화면 모드'가 태블릿이거나, 자동이면서 폭 768px 이상
+ *      하단 탭바 → 왼쪽 세로 레일, 앱 셸 전체 폭, 시트·모달 가운데 정렬, 목록 열 수 증가
+ *  - data-wide: data-tablet 이면서 폭 1024px 이상 → Reader 본문 + 우측 메모·목차 패널 2단
+ */
+:root[data-tablet] {
+  /* global.css 의 .app-shell 이 이 파일보다 뒤에 오므로 폭은 토큰으로 풂 */
+  --app-max-width: none;
+  --rail-w: 104px;
+  --gutter: 32px;
+  /* 탭 화면 본문 최대 폭 */
+  --content-max: 960px;
+  /* 탭바 숨김 화면(퀴즈·메모·온보딩) 본문 최대 폭 */
+  --focus-max: 720px;
+}
+
+:root[data-tablet] body {
+  background: var(--color-bg);
+}
+
+/* ─ 세로 레일: 탭바가 있는 화면은 왼쪽에 레일 자리를 비움 ─ */
+:root[data-tablet] .app-shell:has(> .tabbar) {
+  padding-left: var(--rail-w);
+}
+:root[data-tablet] .app-shell > .tabbar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--rail-w);
+  height: auto;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 20px 12px 20px 8px;
+  border-top: 0;
+  border-right: 3px solid var(--umber);
+  box-shadow: inset -6px 0 0 var(--wood-d);
+}
+:root[data-tablet] .app-shell > .tabbar,
+:root[data-tablet] .app-shell > .tabbar:last-child {
+  /* 레일 나무 배경은 위·아래·왼쪽 여백까지, 탭은 안쪽(global.css 배경 이어 칠하기 참고) */
+  margin: 0;
+  top: calc(-1 * var(--edge-top));
+  bottom: calc(-1 * var(--edge-bottom));
+  left: calc(-1 * var(--edge-x));
+  width: calc(var(--rail-w) + var(--edge-x));
+  height: auto;
+  border-top: var(--edge-top) solid transparent;
+  border-bottom: var(--edge-bottom) solid transparent;
+  border-left: var(--edge-x) solid transparent;
+}
+:root[data-tablet] .app-shell > .tabbar .tab {
+  flex: none;
+  height: 80px;
+  font-size: 15px;
+}
+/* 선택 탭은 위 대신 오른쪽(본문 쪽)으로 나옴 */
+:root[data-tablet] .app-shell > .tabbar .tab.on {
+  transform: translateX(8px);
+}
+
+/* ─ HUD·본문 여백 ─ */
+/* HUD 는 본문과 같은 폭에 맞춤 */
+:root[data-tablet] .appbar {
+  padding: 16px max(var(--gutter), calc((100% - var(--content-max)) / 2)) 8px;
+}
+:root[data-tablet] .app-content {
+  padding: 12px max(var(--gutter), calc((100% - var(--focus-max)) / 2)) 32px;
+  gap: 16px;
+}
+:root[data-tablet] .app-shell:has(> .tabbar) > .app-content {
+  padding-inline: max(var(--gutter), calc((100% - var(--content-max)) / 2));
+}
+/* 마을 장면은 여백 없이 꽉 채움 */
+:root[data-tablet] .app-shell:has(> .tabbar) > .app-content:has(> .scene) {
+  padding: 0;
+}
+:root[data-tablet] .subbar {
+  padding: 8px 20px;
+  min-height: 64px;
+}
+:root[data-tablet] .app-shell > .subbar:first-child {
+  min-height: calc(64px + var(--edge-top));
+}
+:root[data-tablet] .chip-scroll {
+  margin: 0;
+  padding: 0 0 4px;
+  flex-wrap: wrap;
+}
+
+/* ─ 시트·모달: 화면 아래 가로 전체 대신 가운데 카드 ─ */
+:root[data-tablet] .bsheet,
+:root[data-tablet] .app-shell .bsheet {
+  /* 가운데 카드: 여백까지 늘리지 않음 */
+  left: 0;
+  right: 0;
+  max-width: 640px;
+  margin: 0 auto;
+  bottom: 24px;
+  /* 위아래 24px 여백 안에서 시트 전체가 보이게 */
+  max-height: calc(100% - 48px);
+  border: 4px solid var(--umber);
+  box-shadow: 0 6px 0 rgba(30, 14, 5, 0.6);
+}
+:root[data-tablet] .bsheet .grip {
+  display: none;
+}
+:root[data-tablet] .bsheet .bh {
+  padding: 16px 20px 8px;
+}
+:root[data-tablet] .bsheet .bb {
+  padding: 4px 20px 24px;
+}
+:root[data-tablet] .sheet-scroll {
+  max-height: 60dvh;
+}
+:root[data-tablet] .bsheet.raid-sheet,
+:root[data-tablet] .app-shell .bsheet.raid-sheet {
+  /* 일반 시트(640px, 높이 100%-48px)의 가로 90%·세로 70% */
+  max-width: 576px;
+  margin: auto;
+  bottom: 0;
+  max-height: calc((100% - 48px) * 0.7);
+}
+:root[data-tablet] .bsheet.raid-sheet .bh {
+  padding: 16px 16px 8px 20px;
+}
+:root[data-tablet] .raid-sheet .raid-scroll {
+  padding: 4px 20px 24px;
+}
+:root[data-tablet] .modal {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* ─ 마을: 장면은 화면 전체, 이어 읽기 카드는 오른쪽 아래 ─ */
+:root[data-tablet] .scene .field {
+  inset: 0;
+}
+:root[data-tablet] .scene .path-v {
+  bottom: 0;
+}
+:root[data-tablet] .scene .pond {
+  display: none; /* 오른쪽 아래 숲(.lake)이 대신함 */
+}
+:root[data-tablet] .scene .plate {
+  left: 20px;
+  top: 20px;
+}
+:root[data-tablet] .home-chars {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+:root[data-tablet] .scene .house-btn .namecard {
+  font-size: 13px;
+}
+:root[data-tablet] .scene .quest {
+  left: auto;
+  right: 24px;
+  bottom: 24px;
+  width: 380px;
+}
+
+/* ─ 성 모드: 상태 카드는 아래 가운데(필드와 겹치지 않게 장면 아래쪽을 비움) ─ */
+:root[data-tablet] .scene.castle-mode .field {
+  bottom: 200px;
+}
+
+:root[data-tablet] .scene .tile-hud .hpbar {
+  width: 44px;
+  height: 9px;
+}
+:root[data-tablet] .scene .mode-toggle {
+  right: 20px;
+  top: 20px;
+}
+:root[data-tablet] .scene .mode-toggle button {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 17px;
+}
+:root[data-tablet] .scene .castle-panel {
+  left: 50%;
+  right: auto;
+  bottom: 24px;
+  width: min(640px, calc(100% - 48px));
+  transform: translateX(-50%);
+}
+:root[data-tablet] .scene .tile-hud .stars {
+  font-size: 12px;
+}
+
+/* 가로형(가로 태블릿, data-wide): 습격·포인트 패널을 오른쪽 세로 패널로, 필드는 남은 왼쪽을 씀 */
+:root[data-wide] .scene.castle-mode .field {
+  bottom: 0;
+  right: 344px;
+}
+:root[data-wide] .scene .board {
+  max-width: 720px;
+}
+:root[data-wide] .scene .castle-panel {
+  left: auto;
+  right: 20px;
+  top: 76px;
+  bottom: 20px;
+  width: 308px;
+  transform: none;
+  overflow-y: auto;
+  gap: 12px;
+}
+:root[data-wide] .castle-panel > .row:first-child {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+/* 다음 습격은 아래 습격 일정에서 강조하므로 카드는 숨김(일정이 끝나 안내 문구만 있을 때는 보임) */
+:root[data-wide] .castle-panel .next:has(.foes) {
+  display: none;
+}
+:root[data-wide] .castle-panel .raid-plan {
+  display: flex;
+}
+:root[data-wide] .castle-panel .acts {
+  flex-direction: column;
+  margin-top: auto;
+}
+:root[data-wide] .castle-panel .acts > * {
+  flex: 0 0 auto;
+}
+:root[data-tablet] .scene .castle-hp .nm {
+  display: inline;
+  font-size: 15px;
+}
+:root[data-tablet] .scene .hpbar.big {
+  width: 140px;
+  height: 16px;
+}
+
+/* ─ 서재·탐색·메모·내 정보 ─ */
+:root[data-tablet] .book-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+:root[data-tablet] .card-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+:root[data-tablet] .shelf {
+  padding: 20px 20px 12px;
+}
+:root[data-tablet] .shelf > .panel-h {
+  margin: -20px -20px 16px;
+}
+:root[data-tablet] .shelf-grid {
+  gap: 12px;
+}
+:root[data-tablet] .shelf-row + .shelf-row {
+  margin-top: 16px;
+}
+:root[data-tablet] .my-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+:root[data-tablet] .store-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  align-items: start;
+}
+:root[data-tablet] .skills {
+  gap: 12px;
+}
+
+/* ─ Reader: 읽기 폭은 한 줄 길이를 위해 제한 ─ */
+:root[data-tablet] .reader-text {
+  padding-inline: max(var(--gutter), calc((100% - 680px) / 2));
+}
+:root[data-tablet] .reader-foot {
+  padding: 12px var(--gutter);
+}
+:root[data-tablet] .reader-foot-status {
+  text-align: start;
+}
+:root[data-tablet] .reader-foot-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+}
+:root[data-tablet] .reader-foot-actions .btn {
+  min-height: 48px;
+  height: auto;
+  padding: 5px 8px;
+  font-size: 17px;
+  line-height: 1.2;
+  text-align: center;
+}
+:root[data-tablet] .rprog {
+  padding: 12px var(--gutter);
+}
+
+/* ─ 관계도: 무대는 넓게, 정보 카드는 왼쪽 아래 고정 폭 ─ */
+:root[data-tablet] .app-content:has(> .graph-stage) {
+  padding-inline: var(--gutter);
+}
+:root[data-tablet] .graph-pop {
+  right: auto;
+  width: 400px;
+}
+
+:root[data-wide] .card-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+:root[data-wide] .reader-foot {
+  padding-inline: max(24px, calc((100% - 760px) / 2));
+}
+:root[data-wide] .reader-side {
+  width: clamp(252px, 26vw, 340px);
+}
+
+/* 폰처럼 좁은 화면에서 태블릿 모드를 강제한 경우: 레일·여백을 줄이고 열 수는 모바일과 같게 */
+@media (max-width: 599px) {
+  :root[data-tablet] {
+    --rail-w: 76px;
+    --gutter: 12px;
+  }
+  :root[data-tablet] .app-shell > .tabbar .tab {
+    height: 64px;
+    font-size: 13px;
+  }
+  :root[data-tablet] .book-list,
+  :root[data-tablet] .my-layout,
+  :root[data-tablet] .store-detail,
+  :root[data-tablet] .home-chars {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :root[data-tablet] .card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :root[data-tablet] .scene .quest {
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+}
+
+/* ─ Reader 표지·페이지 넘김: 태블릿은 표지를 크게, 쪽 번호 막대는 가운데 ─ */
+:root[data-tablet] .book-cover {
+  min-height: min(720px, calc(100dvh - 280px));
+}
+:root[data-tablet] .bc-board {
+  width: min(100%, 360px);
+}
+:root[data-tablet] .bc-title {
+  font-size: 26px;
+}
+:root[data-tablet] .page-nav {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ─ 마을 꾸미기: 장면 전체 유지, 꾸미기 상자는 아래 가운데 카드 ─ */
+:root[data-tablet] .scene .decor-panel {
+  left: 50%;
+  right: auto;
+  bottom: 20px;
+  width: min(1060px, calc(100% - 48px));
+  transform: translateX(-50%);
+}
+:root[data-tablet] .scene .decor-card {
+  width: 84px;
+}
+
+/* ─ 마을 숲: 이어 읽기 카드(오른쪽 아래 380px) 둘레. 카드 위치를 바꾸면 함께 바꿀 것 ─ */
+:root[data-tablet] .scene .lake {
+  top: auto;
+  left: auto;
+  right: 0;
+  bottom: 0;
+  width: 428px;
+  height: 208px;
+}
+:root[data-tablet] .scene .lake::after {
+  left: calc(var(--px) * 20);
+}
+@media (max-width: 599px) {
+  :root[data-tablet] .scene .lake {
+    left: 0;
+    width: auto;
+    height: 184px;
+  }
+  :root[data-tablet] .scene .lake::after {
+    left: 0;
+  }
+}

@@ -1,0 +1,102 @@
+/**
+ * 디자인 토큰. 목업(mockups/source/base.css) color_palette 기준.
+ * 1) 팔레트 원색   2) 의미 기반 별칭(semantic)   3) 타이포·간격·그림자
+ * 컴포넌트는 가능하면 semantic 토큰을 사용함.
+ */
+:root {
+  /* 1. palette ─ wood / parchment */
+  --umber: #34190c;
+  --timber: #4a2311;
+  --outline: #68381e;
+  --woodframe: #582a14;
+  --wood: #874b28;
+  --wood-d: #6a3a1e;
+  --sand: #fff2d6;
+  --canvas: #f3d097;
+  --parch: #f8e0b3;
+  --parch-l: #fff8ec;
+  --surface: #fff8f3;
+  --sc-low: #fff1e3;
+  --sc: #ffebd3;
+  --sc-high: #ffe4c2;
+  --sc-highest: #ffddb0;
+  --hl: #efc07b;
+  --sh: #b0743b;
+
+  /* palette ─ accent */
+  --green: #2b8739;
+  --green-d: #1e3a1c;
+  --green-l: #7fdb82;
+  --green-pale: #d6f2cf;
+  --amber: #d97b29;
+  --amber-d: #7a3d0c;
+  --amber-l: #fd9844;
+  --gold: #f7c948;
+  --berry: #883e82;
+  --berry-d: #4d1f4a;
+  --berry-l: #ffd7f5;
+
+  /* palette ─ text / state */
+  --ink: #291800;
+  --ink2: #4a2311;
+  --muted: #7a5a3a;
+  --err: #ba1a1a;
+
+  /* 2. semantic */
+  --color-bg: var(--canvas);
+  --color-surface: var(--parch);
+  --color-surface-raised: var(--parch-l);
+  --color-border: var(--umber);
+  --color-text: var(--ink);
+  --color-text-sub: var(--ink2);
+  --color-text-muted: var(--muted);
+  --color-primary: var(--green);
+  --color-primary-shadow: var(--green-d);
+  --color-secondary: var(--amber);
+  --color-secondary-shadow: var(--amber-d);
+  --color-accent: var(--berry);
+  --color-accent-shadow: var(--berry-d);
+  --color-danger: var(--err);
+  --color-dim: rgba(41, 24, 0, 0.58);
+
+  /* palette ─ village scene */
+  --grass: #8cc85a;
+  --grass-d: #6fae45;
+  --dirt: #d9a35f;
+  --dirt-d: #b7803f;
+  --water: #5fb3d9;
+  --water-l: #a6dcf0;
+
+  /* 3. typography */
+  --font-body: 'Noto Sans KR', sans-serif;
+  --font-title: 'Do Hyeon', 'Noto Sans KR', sans-serif;
+  --font-mono: 'Space Mono', 'Noto Sans KR', monospace;
+  --font-reading: 'Gowun Batang', serif;
+
+  /* spacing (4px grid) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+
+  /* pixel border / shadow */
+  --bw: 3px;
+  --bw-thin: 2px;
+  --shadow-drop: 0 4px 0 var(--umber);
+  --shadow-drop-sm: 0 3px 0 var(--umber);
+  --bevel: inset 0 3px 0 rgba(255, 255, 255, 0.28), inset 0 -3px 0 rgba(0, 0, 0, 0.18);
+  --press: 80ms cubic-bezier(0.2, 0, 0, 1);
+
+  /* layout */
+  --app-max-width: 430px;
+  /* 화면 가장자리 빈 여백. 배경만 칠하고 요소는 두지 않음. 기기 안전 영역이 더 크면 그 값을 씀 */
+  --edge-top: max(20px, env(safe-area-inset-top));
+  --edge-bottom: max(10px, env(safe-area-inset-bottom));
+  --edge-x: 5px;
+  --tabbar-h: 76px;
+  --z-dim: 50;
+  --z-sheet: 60;
+}

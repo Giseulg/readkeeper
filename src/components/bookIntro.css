@@ -1,0 +1,237 @@
+/*
+ * 앱 첫 진입 인트로(BookIntro.tsx). 책 한 쪽 = 화면 전체, 책등 = 화면 왼쪽 가장자리.
+ * 가죽 표지·종이는 왼쪽 가장자리를 축으로 넘어가 화면 밖으로 빠짐. 타이밍(총 4.1s):
+ *  0.00–0.60 표지 유지 / 0.60–1.80 표지 열림 / 1.55–2.85 종이 1장 넘김
+ *  2.85–3.55 마지막 쪽(글) 머무름 / 3.55–4.10 사라짐
+ * 넘김은 sine in-out 곡선, 넘어가는 면은 들릴수록 어두워지고 아래 쪽에 그림자가 드리움.
+ * 이 인트로만 픽셀 UI 대신 실제 책 질감을 씀.
+ */
+.book-intro {
+  --bi-fs: 18px;
+  --leather: #5b3520;
+  --leather-d: #3a1f12;
+  --foil: #d9b46a;
+  --foil-d: #9c7a3c;
+  --paper: #f6efdf;
+  --paper-ink: #2b2118;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: hidden;
+  background: var(--paper);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  animation: bi-out 0.55s 3.55s ease-in-out forwards;
+}
+.book-intro.is-exit {
+  animation: bi-out 0.3s ease-in forwards;
+}
+
+.bi-stage,
+.bi-book,
+.bi-page,
+.bi-sheet,
+.bi-cover {
+  position: absolute;
+  inset: 0;
+}
+.bi-book {
+  perspective: 260vmax;
+  perspective-origin: 0 50%;
+}
+
+/* ─ 종이: 책등 쪽 그늘 + 가장자리 바램 ─ */
+.bi-page,
+.bi-sheet .bi-face {
+  padding: max(9vmin, 40px) 8vmin max(14vmin, 72px) 10vmin;
+  background:
+    linear-gradient(to right, rgba(60, 35, 15, 0.28), rgba(60, 35, 15, 0.06) 5vmin, transparent 9vmin),
+    radial-gradient(ellipse at 60% 50%, transparent 55%, rgba(120, 90, 50, 0.14)),
+    var(--paper);
+}
+.bi-sheet .bi-back {
+  background:
+    linear-gradient(to left, rgba(60, 35, 15, 0.22), transparent 8vmin),
+    #efe6d2;
+}
+.bi-text {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Nanum Myeongjo', 'Gowun Batang', serif;
+  font-size: var(--bi-fs);
+  line-height: 1.85;
+  color: var(--paper-ink);
+  text-align: justify;
+  text-indent: 1em;
+  word-break: normal;
+  line-break: strict;
+}
+/* 가로 화면: 두 단으로 나눠 쪽을 빼곡히 채움 */
+@media (min-aspect-ratio: 1/1) {
+  .bi-text {
+    column-count: 2;
+    column-gap: 8vmin;
+    column-fill: auto;
+  }
+}
+
+/* ─ 넘어가는 종이·표지 ─ */
+.bi-sheet,
+.bi-cover {
+  transform-origin: left center;
+  transform-style: preserve-3d;
+}
+.bi-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.bi-back {
+  transform: rotateY(180deg);
+}
+.bi-sheet,
+.bi-cover {
+  --ease: cubic-bezier(0.37, 0, 0.63, 1);
+  animation: bi-flip var(--dur) var(--delay) var(--ease) forwards;
+}
+.bi-sheet {
+  --dur: 1.3s;
+  --delay: calc(1.55s + var(--i) * 0.5s);
+  z-index: calc(10 - var(--i));
+}
+/* 넘어가는 앞면: 들릴수록 빛을 덜 받아 어두워짐 */
+.bi-sheet .bi-front::after,
+.bi-cover .bi-front::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to left, rgba(30, 15, 5, 0.45), rgba(30, 15, 5, 0.12) 70%, transparent);
+  opacity: 0;
+  animation: bi-shade var(--dur) var(--delay) var(--ease) forwards;
+}
+/* 마지막 쪽: 위 종이가 들리는 동안 책등 쪽 그림자 */
+.bi-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to right, rgba(30, 15, 5, 0.35), transparent 55%);
+  opacity: 0;
+  animation: bi-cast 1.3s 1.55s cubic-bezier(0.37, 0, 0.63, 1) forwards;
+}
+
+/* ─ 가죽 표지 ─ */
+.bi-cover {
+  --dur: 1.2s;
+  --delay: 0.6s;
+  z-index: 20;
+}
+.bi-cover .bi-front {
+  display: grid;
+  place-items: center;
+  padding: 7vmin 7vmin 7vmin 11vmin;
+  background:
+    /* 가죽 결 */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    /* 책등 이음매 */
+    linear-gradient(to right, var(--leather-d) 0, #6b3f26 2.2vmin, var(--leather-d) 3.4vmin, rgba(0, 0, 0, 0.35) 3.6vmin, transparent 4.2vmin),
+    /* 은은한 광택 */
+    radial-gradient(ellipse 80% 60% at 40% 30%, rgba(255, 220, 180, 0.16), transparent 70%),
+    radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(0, 0, 0, 0.45)),
+    var(--leather);
+  background-blend-mode: soft-light, normal, normal, normal, normal;
+}
+.bi-cover .bi-back {
+  background:
+    linear-gradient(to left, rgba(0, 0, 0, 0.3), transparent 6vmin),
+    #e9dcc0;
+}
+/* 압인 테두리 + 금박 제목 */
+.bi-frame {
+  position: absolute;
+  inset: 7vmin 6vmin 7vmin 10vmin;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3.5vmin;
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(255, 220, 180, 0.12),
+    inset 0 0 0 1px rgba(255, 220, 180, 0.12),
+    inset 0 0 0 1.4vmin transparent,
+    inset 0 0 0 calc(1.4vmin + 1px) rgba(217, 180, 106, 0.55);
+}
+.bi-title {
+  font-family: 'Nanum Myeongjo', serif;
+  font-weight: 800;
+  font-size: clamp(30px, 9vmin, 88px);
+  letter-spacing: 0.12em;
+  margin-right: -0.12em;
+  white-space: nowrap;
+  color: var(--foil);
+  background: linear-gradient(170deg, #f3dca0 0%, var(--foil) 45%, var(--foil-d) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.6));
+}
+.bi-rule {
+  width: 22vmin;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--foil), transparent);
+}
+
+.bi-skip {
+  position: absolute;
+  z-index: 30;
+  left: 50%;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  padding: 6px 16px;
+  font: 14px var(--font-body);
+  letter-spacing: 0.08em;
+  color: #fff8ec;
+  background: rgba(30, 18, 10, 0.45);
+  border: 1px solid rgba(255, 248, 236, 0.4);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+@keyframes bi-flip {
+  to { transform: rotateY(-180deg); }
+}
+@keyframes bi-shade {
+  50% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes bi-cast {
+  45% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes bi-fade {
+  to { opacity: 0; }
+}
+@keyframes bi-out {
+  to { opacity: 0; visibility: hidden; }
+}
+
+/* 움직임 줄이기: 넘김 없이 표지 → 글 쪽으로 바뀐 뒤 사라짐 */
+@media (prefers-reduced-motion: reduce) {
+  .bi-sheet {
+    display: none;
+  }
+  .bi-page::after,
+  .bi-cover .bi-front::after {
+    animation: none;
+  }
+  .bi-cover {
+    animation: bi-fade 0.3s 0.8s forwards;
+  }
+  .book-intro {
+    animation: bi-out 0.3s 2.3s forwards;
+  }
+}

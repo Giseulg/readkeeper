@@ -1,0 +1,3 @@
+-r ../requirements.txt
+uvicorn
+openai>=2,<3

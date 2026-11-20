@@ -1,0 +1,42 @@
+{
+  "headers": [
+    {
+      "source": "/((?!assets/).*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/reading/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/((?!assets/|api/|release\\.json|mockServiceWorker\\.js).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "framework": "vite",
+  "regions": [
+    "icn1"
+  ],
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{node_modules/**,src/**,public/**,dist/**,docs/**,backend/tests/**,backend/scripts/**,scripts/**}"
+    }
+  }
+}

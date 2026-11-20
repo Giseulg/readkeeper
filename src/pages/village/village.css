@@ -1,0 +1,122 @@
+/* 1.0 마을 장면. 화면의 주인공이므로 색·디테일은 여기에만 씀 */
+.scene{flex:1;position:relative;overflow:hidden;border-top:3px solid var(--umber);
+  background-color:var(--grass);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' shape-rendering='crispEdges'%3E%3Cg fill='%236fae45'%3E%3Crect x='6' y='8' width='2' height='4'/%3E%3Crect x='9' y='10' width='2' height='2'/%3E%3Crect x='26' y='26' width='2' height='4'/%3E%3Crect x='29' y='28' width='2' height='2'/%3E%3C/g%3E%3Crect x='18' y='16' width='2' height='2' fill='%23a6d877'/%3E%3C/svg%3E");
+  background-size:40px 40px;image-rendering:pixelated}
+.scene .field{position:absolute;inset:0 0 184px;isolation:isolate;container-type:size}
+/* 장면 요소 기준 1px: iPad 가로 필드(1076x753) 기준으로 필드 폭·높이 중 작은 비율을 씀.
+   캐릭터·집·나무 등은 PixelSprite fluid 로 '원본 칸 수 × 배율 × --px' 크기. 값은 domain/village.ts FIELD_REF 와 같게 */
+.scene .field{--px:min(100cqw / 1076, 100cqh / 753)}
+.scene .path-v{position:absolute;left:calc(50% - 20px);width:40px;top:18%;bottom:0;background:var(--dirt);box-shadow:inset 4px 0 0 var(--dirt-d),inset -4px 0 0 var(--dirt-d)}
+.scene .path-h{position:absolute;left:0;right:0;top:56%;height:40px;background:var(--dirt);box-shadow:inset 0 4px 0 var(--dirt-d),inset 0 -4px 0 var(--dirt-d)}
+/* 물가 모서리(사용자 요청 2026-11-20): 픽셀 계단식으로 둥글게. 물(::before)을 clip-path 로 깎고, 외곽선은 바깥 요소의 drop-shadow 로 그려 깎인 모양을 따라가게 함 */
+.scene{--shore:drop-shadow(3px 0 0 var(--umber)) drop-shadow(-3px 0 0 var(--umber)) drop-shadow(0 3px 0 var(--umber)) drop-shadow(0 -3px 0 var(--umber));
+  --round-all:polygon(0px 21px,2px 21px,2px 18px,3px 18px,3px 15px,5px 15px,5px 12px,7px 12px,7px 9px,10px 9px,10px 6px,14px 6px,14px 3px,20px 3px,20px 0px,calc(100% - 20px) 0px,calc(100% - 20px) 3px,calc(100% - 14px) 3px,calc(100% - 14px) 6px,calc(100% - 10px) 6px,calc(100% - 10px) 9px,calc(100% - 7px) 9px,calc(100% - 7px) 12px,calc(100% - 5px) 12px,calc(100% - 5px) 15px,calc(100% - 3px) 15px,calc(100% - 3px) 18px,calc(100% - 2px) 18px,calc(100% - 2px) 21px,calc(100% - 0px) 21px,calc(100% - 0px) calc(100% - 21px),calc(100% - 2px) calc(100% - 21px),calc(100% - 2px) calc(100% - 18px),calc(100% - 3px) calc(100% - 18px),calc(100% - 3px) calc(100% - 15px),calc(100% - 5px) calc(100% - 15px),calc(100% - 5px) calc(100% - 12px),calc(100% - 7px) calc(100% - 12px),calc(100% - 7px) calc(100% - 9px),calc(100% - 10px) calc(100% - 9px),calc(100% - 10px) calc(100% - 6px),calc(100% - 14px) calc(100% - 6px),calc(100% - 14px) calc(100% - 3px),calc(100% - 20px) calc(100% - 3px),calc(100% - 20px) calc(100% - 0px),20px calc(100% - 0px),20px calc(100% - 3px),14px calc(100% - 3px),14px calc(100% - 6px),10px calc(100% - 6px),10px calc(100% - 9px),7px calc(100% - 9px),7px calc(100% - 12px),5px calc(100% - 12px),5px calc(100% - 15px),3px calc(100% - 15px),3px calc(100% - 18px),2px calc(100% - 18px),2px calc(100% - 21px),0px calc(100% - 21px))}
+.scene .pond{position:absolute;right:-12px;top:calc(56% + 64px);width:136px;height:88px;filter:var(--shore)}
+.scene .pond::before{content:"";position:absolute;inset:0;background:var(--water);box-shadow:inset 0 8px 0 var(--water-l);clip-path:var(--round-all)}
+.scene .deco{position:absolute;transform:translate(-50%,-100%)}
+.scene .chr{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center}
+.scene .chr .sh{width:28px;height:4px;margin-top:-2px;background:rgba(30,60,20,.3)}
+/* 캐릭터 끌어 옮기기: 끄는 동안 살짝 들리고 몸통이 좌우로 흔들림(팔다리·표정은 스프라이트 프레임) */
+.scene .chr{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.scene .chr.dragging{cursor:grabbing;transform:translate(-50%,calc(-100% - 12px))}
+.scene .chr.dragging svg{animation:flail .22s steps(1) infinite}
+.scene .chr.dragging .sh{width:22px;transform:translateY(12px);background:rgba(30,60,20,.22)}
+@keyframes flail{0%{transform:translateX(-2px) rotate(-3deg)}50%{transform:translateX(2px) rotate(3deg)}}
+@media (prefers-reduced-motion:reduce){.scene .chr.dragging svg{animation:none}}
+
+.scene .plate{position:absolute;left:12px;top:12px;display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;background:var(--wood);color:var(--sand);border:3px solid var(--umber);box-shadow:0 3px 0 rgba(30,14,5,.45);font:400 16px var(--font-title)}
+.scene .plate .num{font-size:12px;opacity:.85}
+
+.scene .quest{position:absolute;left:12px;right:12px;bottom:12px;padding:12px;background:var(--parch-l);border:3px solid var(--umber);box-shadow:0 4px 0 rgba(30,14,5,.5);display:flex;flex-direction:column;gap:12px}
+.scene .quest .t{font:500 16px var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 숲(사용자 요청 2026-11-20: 처음엔 호수, 이후 나무가 무작위로 빽빽한 숲으로 교체): 상태창(이어 읽기 카드) 자리. 캐릭터·소품을 둘 수 없음.
+   pages/village/lake.ts 가 이 요소(.lake) 위치를 잼. 세로형은 장면 아래 띠 전체, 태블릿은 카드 둘레(tablet.css).
+   바닥은 ::after, 나무는 ::before 가 위로 24px(기준 1px) 삐져나와 윗선이 나무 모양으로 들쭉날쭉함 */
+.scene .lake{position:absolute;left:0;right:0;top:100%;height:184px;z-index:0;pointer-events:none}
+/* 바닥: 나무 사이 틈으로 보이는 어두운 땅. 윗줄·왼쪽 줄은 나무가 듬성해 바닥도 20px(기준 1px) 안쪽에서 시작 */
+.scene .lake::after{content:"";position:absolute;z-index:-1;inset:calc(var(--px) * 20) 0 0 0;background:color-mix(in srgb,var(--grass) 55%,#000)}
+.scene .lake::before{content:"";position:absolute;left:calc(var(--px) * -24);right:0;bottom:0;top:calc(var(--px) * -24);
+  background-image:var(--forest);background-repeat:repeat;background-position:left top;
+  background-size:calc(var(--px) * 1200) calc(var(--px) * 584)}
+
+/* 집: 누르면 캐릭터 표시 선택 시트 */
+.scene .house-btn{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;padding:0;background:none;border:0;cursor:pointer}
+.scene .house-btn .namecard{position:static;transform:none;margin-bottom:4px;background:var(--wood);color:var(--sand);border-color:var(--umber)}
+.scene .house-btn:active svg{transform:translateY(3px)}
+.scene .house-btn:focus-visible{outline:3px solid var(--amber-l);outline-offset:2px}
+
+/* 배치한 캐릭터의 움직임과 인사 */
+.scene .chr-body {display:flex;flex-direction:column;align-items:center}
+.scene .chr-hop {display:flex;transform:translateY(calc(-1 * var(--hop-lift, 0px)))}
+.scene .chr[data-greeting="true"] .chr-body {animation:village-resident-greet .62s ease-out}
+.chr-bubble {position:absolute;z-index:2;left:50%;bottom:calc(100% + 12px);transform:translateX(-50%);padding:4px 9px;white-space:nowrap;color:var(--ink);background:var(--parch-l);border:2px solid var(--umber);font-size:14px}
+.chr-bubble button {cursor:pointer;margin-left:4px}
+@keyframes village-resident-greet {
+  0%, 100% {transform:translateY(0)}
+  16% {transform:scaleY(.86)}
+  48% {transform:translateY(-25px)}
+  78% {transform:translateY(0) scaleY(.90)}
+}
+@media (prefers-reduced-motion:reduce) {
+  .scene .chr[data-greeting="true"] .chr-body {animation:none}
+}
+
+/* ───── 마을 꾸미기([내 마을] 버튼 → 꾸미기 모드) ───── */
+.scene .plate-btn{z-index:4;cursor:pointer}
+.scene .plate-btn:active{transform:translateY(3px);box-shadow:0 0 0 rgba(30,14,5,.45)}
+.scene .plate-btn:focus-visible{outline:3px solid var(--amber-l);outline-offset:2px}
+.scene .plate-btn.done{background:var(--green);color:#fff}
+.scene .deco{pointer-events:none}
+
+/* 꾸미기 중: 캐릭터는 흐리게·건드릴 수 없게, 장면에 놓기 칸 안내 격자 */
+.scene.decorating .chr{opacity:.45;pointer-events:none;filter:saturate(.6)}
+.scene.decorating .field::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,.16) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.16) 2px,transparent 2px);
+  background-size:calc(var(--px) * 64) calc(var(--px) * 64)}
+
+.scene .decor-piece{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center}
+.scene .decor-grab{display:flex;align-items:flex-end;justify-content:center;min-width:44px;min-height:44px;padding:0;border:0;background:none;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;line-height:0}
+.scene .decor-grab svg{display:block}
+.scene .decor-piece.sel .decor-grab{outline:3px dashed var(--amber-l);outline-offset:3px}
+.scene .decor-piece.dragging .decor-grab{cursor:grabbing;transform:translateY(-10px);filter:drop-shadow(0 10px 0 rgba(30,60,20,.3))}
+.scene .decor-piece.to-bin .decor-grab{opacity:.5}
+.scene .decor-grab:focus-visible{outline:3px solid var(--amber-l);outline-offset:3px}
+.scene .decor-tools{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.scene .decor-name{padding:2px 8px;background:var(--parch-l);border:2px solid var(--umber);font:400 13px var(--font-title);color:var(--ink)}
+.scene .decor-recall{display:flex;align-items:center;gap:4px;height:30px;padding:0 10px;background:var(--berry);color:#fff;border:3px solid var(--umber);box-shadow:0 3px 0 rgba(30,14,5,.45);font:400 14px var(--font-title);cursor:pointer}
+.scene .decor-recall:active{transform:translateY(3px);box-shadow:none}
+
+/* 꾸미기 상자: 세로형은 장면 아래 전체, 태블릿은 아래 가운데 카드 */
+.scene .decor-panel{position:absolute;left:12px;right:12px;bottom:12px;z-index:5;display:flex;flex-direction:column;gap:8px;padding:10px 10px 8px;background:var(--parch-l);border:3px solid var(--umber);box-shadow:0 4px 0 rgba(30,14,5,.5)}
+.scene .decor-panel.hot{background:var(--sand);outline:3px dashed var(--berry);outline-offset:-8px}
+.scene .decor-head{display:flex;align-items:center;gap:8px;min-width:0}
+.scene .decor-head b{font:400 16px var(--font-title);color:var(--ink);flex:none}
+.scene .decor-hint{flex:1;min-width:0;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scene .decor-points{display:flex;align-items:center;gap:4px;flex:none;padding:2px 8px;background:var(--wood);color:var(--gold);border:2px solid var(--umber)}
+.scene .decor-points .num{color:var(--sand);font-size:13px}
+.scene .decor-error{margin:0;font-size:12px;color:var(--err)}
+.scene .decor-panel.folded .decor-list,.scene .decor-panel.folded .decor-error{display:none}
+.scene .decor-fold{flex:none;display:grid;place-items:center;width:32px;height:28px;background:var(--wood);color:var(--sand);border:2px solid var(--umber);cursor:pointer}
+.scene .decor-list{display:flex;gap:8px;margin:0;padding:0 0 4px;list-style:none;overflow-x:auto}
+.scene .decor-card{width:76px;flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;background:#fff;border:3px solid var(--umber);box-shadow:0 3px 0 rgba(30,14,5,.35);cursor:pointer}
+.scene .decor-card:active:not(:disabled){transform:translateY(3px);box-shadow:none}
+.scene .decor-card:disabled{opacity:.5;cursor:default}
+.scene .decor-card.locked{background:var(--parch)}
+.scene .decor-card.locked .decor-thumb svg:first-child{filter:grayscale(1) brightness(.75)}
+.scene .decor-thumb{position:relative;display:grid;place-items:center;width:44px;height:44px}
+.scene .decor-lock{position:absolute;right:-4px;bottom:-2px;display:grid;place-items:center;width:20px;height:20px;background:var(--wood);color:var(--sand);border:2px solid var(--umber)}
+.scene .decor-cname{font:400 13px var(--font-title);color:var(--ink)}
+.scene .decor-count{font-size:11px;color:var(--muted)}
+.scene .decor-cost{font-size:11px;font-weight:700;color:var(--berry)}
+
+/* 1.1 캐릭터 정보 팝업: styles/components.css (수집 탭과 공용) */
+
+/* 모바일 세로 모드(사용자 요청 2026-11-20): 상태창을 가로·세로 80%로 축소(아래 가운데 기준), 호수 띠도 카드 높이(160→128px)에 맞춤.
+   카드 128 + 위아래 물가 12px = 152px */
+@media (orientation:portrait){
+  :root:not([data-tablet]) .scene .quest{transform:scale(.8);transform-origin:50% 100%}
+  :root:not([data-tablet]) .scene:not(.castle-mode) .field{bottom:152px}
+  :root:not([data-tablet]) .scene .lake{height:152px}
+}

@@ -1,0 +1,184 @@
+/* 1.0 랜딩홈 > 성 모드. 위 가운데 지식의 성 + 아래 5×5 바둑판 필드(수호 캐릭터 배치) + 아래쪽에서 올라오는 적 */
+
+/* 모드 전환(마을 | 성): 장면 오른쪽 위 */
+.scene .mode-toggle{position:absolute;right:12px;top:12px;z-index:3;display:flex;border:3px solid var(--umber);background:var(--wood);box-shadow:0 3px 0 rgba(30,14,5,.45)}
+.scene .mode-toggle button{display:flex;align-items:center;gap:4px;height:30px;padding:0 10px;font:400 15px var(--font-title);color:var(--sand)}
+.scene .mode-toggle button+button{border-left:3px solid var(--umber)}
+.scene .mode-toggle button.on{background:var(--sand);color:var(--umber)}
+
+.scene.castle-mode .field{bottom:192px}
+
+/* 성 + HP 바 */
+.scene .castle{position:relative;display:flex;flex-direction:column;align-items:center;z-index:1}
+.scene .castle-hp{display:flex;align-items:center;gap:6px;margin-bottom:6px;padding:3px 6px;background:var(--parch-l);border:2px solid var(--umber);box-shadow:0 2px 0 rgba(30,14,5,.4)}
+.scene .castle-hp .nm{font:400 13px var(--font-title);color:var(--ink);white-space:nowrap}
+.scene .castle-hp .nm{display:none}
+.scene .castle-hp .hpbar .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1;color:#fff;text-shadow:1px 0 var(--umber),-1px 0 var(--umber),0 1px var(--umber),0 -1px var(--umber)}
+.hpbar{position:relative;width:44px;height:8px;border:2px solid var(--umber);background:#5b3a2a}
+.hpbar.big{width:92px;height:14px}
+.hpbar>i{position:absolute;left:0;top:0;bottom:0;background:var(--green-l);box-shadow:inset 0 -2px 0 rgba(0,0,0,.18);transition:width .6s steps(12)}
+.hpbar>i.a{background:var(--gold)}
+.hpbar>i.r{background:#e0484a}
+.scene .castle.hit .px{animation:castle-shake .36s steps(2) 2}
+@keyframes castle-shake{0%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
+.scene .castle .dmg{position:absolute;left:50%;top:38%;font:700 22px var(--font-mono);color:#fff;text-shadow:2px 0 var(--umber),-2px 0 var(--umber),0 2px var(--umber),0 -2px var(--umber);animation:dmg-float 1.1s steps(6) forwards;pointer-events:none}
+@keyframes dmg-float{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,-36px);opacity:0}}
+
+/* 바둑판 필드(5×5): 노란 타일 체크무늬, 칸을 누르면 수호 캐릭터 배치·관리 */
+.scene .castle-field{display:flex;flex-direction:column}
+/* 성 필드 기준 1px: iPad 가로 성 필드(732x753) 기준. 성 192px·칸 캐릭터 144px(마을 캐릭터의 1.5배)·적 64px 이 그 화면 크기이고 다른 화면은 같은 비율로 늘고 줆.
+   성 영역 높이 = 성 + HP 바 자리 */
+.scene .field.castle-field{--px:min(100cqw / 732, 100cqh / 753);--castle-h:calc(var(--px) * 192 + 48px)}
+.scene .castle-top{flex:none;height:var(--castle-h);display:flex;align-items:flex-end;justify-content:center}
+.scene .board-wrap{flex:1;min-height:0;display:flex;justify-content:center;padding:6px 12px 10px}
+.scene .board{width:100%;max-width:560px;height:100%;display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);gap:0}
+/* 잔디에 녹아드는 체스판 타일: 외곽선·그림자 없음. 옅은 칸 = 배경 잔디 그대로(투명), 짙은 칸 = 잔디색 20% 어둡게 */
+.scene .tile{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 0 3px;background:transparent;cursor:pointer}
+.scene .tile.d{background:color-mix(in srgb,var(--grass) 80%,#000)}
+.scene .tile:not(.guard):hover{filter:brightness(1.12)}
+.scene .tile:focus-visible{outline:3px solid var(--gold);outline-offset:-3px;z-index:1}
+.scene .tile:active .px{transform:translateY(2px)}
+.scene .tile-hud{position:absolute;left:50%;top:3px;transform:translateX(-50%);display:flex;align-items:center;gap:2px;pointer-events:none}
+.scene .tile-hud .hpbar{width:30px;height:7px}
+.scene .tile .stars{font:400 10px var(--font-mono);color:var(--gold);text-shadow:1px 0 var(--umber),-1px 0 var(--umber),0 1px var(--umber),0 -1px var(--umber);line-height:1}
+.scene .tile.guard .px{animation:bob 1.2s steps(1) infinite}
+.scene .tile.guard:nth-child(2n) .px{animation-delay:-.6s}
+.scene .tile.ko .px{filter:grayscale(1) brightness(.8);animation:none;opacity:.8}
+.scene .tile .ko-tag{position:absolute;bottom:2px;font:500 10px var(--font-body);color:var(--sand);background:var(--umber);padding:0 4px}
+
+/* 적: 장면 가장자리에서 성 앞으로 달려옴(달리기 2프레임), 명중하면 사라짐 */
+.scene .enemy{position:absolute;left:var(--ex);top:var(--ey);transform:translate(-50%,-100%);z-index:2;pointer-events:none;animation:raid-run 1.25s steps(14) both}
+.scene .enemy.flip>span{transform:scaleX(-1)}
+.scene .enemy>span{display:block}
+.scene .enemy .f1{position:absolute;inset:0;visibility:hidden}
+.scene .enemy .f0{animation:run-f0 .24s steps(1) infinite}
+.scene .enemy .f1{animation:run-f1 .24s steps(1) infinite}
+.scene .enemy.gone{animation:raid-gone .4s steps(4) forwards}
+@keyframes raid-run{from{left:var(--sx);top:var(--sy)}to{left:var(--ex);top:var(--ey)}}
+@keyframes run-f0{50%{visibility:hidden}}
+@keyframes run-f1{50%{visibility:visible}}
+/* 공격 모션: 대상 옆에서 공격 3프레임(1회) */
+.scene .enemy.atk{left:var(--ex);top:var(--ey);animation:none}
+.scene .enemy.atk>span{display:block}
+.scene .enemy.atk .a1,.scene .enemy.atk .a2{position:absolute;inset:0;visibility:hidden}
+.scene .enemy.atk .a0{animation:atk-a0 .48s steps(1) forwards}
+.scene .enemy.atk .a1{animation:atk-a1 .48s steps(1) forwards}
+.scene .enemy.atk .a2{animation:atk-a2 .48s steps(1) forwards}
+@keyframes atk-a0{0%{visibility:visible}33%,100%{visibility:hidden}}
+@keyframes atk-a1{0%,33%{visibility:hidden}34%,66%{visibility:visible}67%,100%{visibility:hidden}}
+@keyframes atk-a2{0%,66%{visibility:hidden}67%,100%{visibility:visible}}
+/* 피격: 5% 커지며 흰색으로 번쩍 → 작아지며 원래 색 */
+.scene .tile.struck .px,.scene .castle.struck .px{animation:struck-grow .42s steps(6) both,struck-white .42s steps(1) both}
+@keyframes struck-grow{0%{transform:scale(1)}30%{transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes struck-white{0%,45%{filter:brightness(0) invert(1)}46%,100%{filter:none}}
+/* 피격 진동: 상하좌우로 프레임이 끊기듯 흔들림 */
+.scene .tile.struck,.scene .castle.struck{animation:struck-jolt .42s steps(1) both}
+@keyframes struck-jolt{0%{translate:0 calc(var(--px) * -5)}14%{translate:calc(var(--px) * 5) 0}28%{translate:0 calc(var(--px) * 5)}42%{translate:calc(var(--px) * -5) 0}57%{translate:calc(var(--px) * 3) calc(var(--px) * -3)}71%{translate:calc(var(--px) * -3) calc(var(--px) * 2)}85%{translate:calc(var(--px) * 2) 0}100%{translate:0 0}}
+/* 칼날 베기 잔상: public/sprites/effects/blade-afterimages.png (4프레임×2색, 위 주황=기억도둑, 아래 청록=망각닌자) */
+.scene .slash{position:absolute;left:50%;top:50%;width:110%;aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none;z-index:3;background:url(/sprites/effects/blade-afterimages.png) no-repeat 0 0/400% 200%;image-rendering:pixelated;opacity:0}
+.scene .castle .slash{width:80%;top:58%}
+.scene .slash.ninja{background-position-y:100%}
+.scene .slash.on{animation:blade .56s steps(1) forwards}
+@keyframes blade{0%{opacity:1;background-position-x:0%}14%{background-position-x:33.333%}28%{background-position-x:66.667%}42%{background-position-x:100%;opacity:1}70%{background-position-x:100%;opacity:.5}100%{background-position-x:100%;opacity:0}}
+@keyframes raid-gone{from{opacity:1}to{opacity:0;transform:translate(-50%,-130%)}}
+@media (prefers-reduced-motion:reduce){
+  .scene .enemy{animation:none;opacity:.9}
+  .scene .castle.hit .px,.scene .enemy .f0,.scene .enemy .f1,.scene .tile.struck .px,.scene .castle.struck .px,.scene .tile.struck,.scene .castle.struck,.scene .slash.on{animation:none}
+}
+
+/* 아래 상태 카드: 포인트·다음 습격·수리(사용자 요청 2026-11-20 /unslop 정리).
+   기준: 평평한 종이 패널, 입체는 버튼·칩만. 컨트롤 높이 32px 하나로 맞추고, 시선은 '다음 습격까지 남은 시간'과 초록 주 버튼에 모음 */
+/* 종이 배경 패널 없이 내부 요소(포인트·다음 습격·버튼)를 잔디 위에 바로 진열(사용자 요청 2026-11-20). 요소마다 자기 배경·외곽선이 있어 읽힘 */
+.scene .castle-panel{position:absolute;left:12px;right:12px;bottom:12px;padding:0;display:flex;flex-direction:column;gap:12px;z-index:2}
+.castle-panel .err{align-self:flex-start;padding:2px 8px;background:var(--parch-l);border:2px solid var(--umber)}
+.castle-panel .pts{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 12px;background:var(--umber);color:var(--sand)}
+.castle-panel .pts .num{font-size:16px}
+.castle-panel .pts .u{font:400 12px var(--font-title);color:var(--gold)}
+.castle-panel .chip.skip{border-style:dashed;color:var(--muted)}
+.castle-panel .tag.mono{height:24px;padding:0 8px;font-size:11px}
+/* 다음 습격: 왼쪽 적 아이콘 · 가운데 설명 · 오른쪽 남은 시간(가장 큰 글자) */
+.castle-panel .next{display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--sc);border:2px solid var(--umber)}
+.castle-panel .next .lbl{font-size:12px;color:var(--muted)}
+.castle-panel .next .t{font:500 15px var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.castle-panel .next .when{font-size:16px;color:var(--berry);white-space:nowrap;font-variant-numeric:tabular-nums}
+.castle-panel .foes,.raid .foes{display:flex;gap:4px}
+.castle-panel .err,.bsheet .err{color:var(--err)}
+/* 버튼 두 개: 읽기(초록)가 주, 성 수리(종이색)는 보조로 폭도 좁게. 주황·초록 두 색이 다투지 않게 함 */
+.castle-panel .acts>*{flex:1 1 0}
+.castle-panel .acts>:first-child{flex:0 0 40%}
+
+/* 필드 칸 시트 */
+.def-card{display:flex;gap:12px;align-items:center;padding:10px;border:3px solid var(--umber);background:var(--sc-low)}
+.def-card .pic{display:flex;align-items:center;justify-content:center;width:72px;height:72px;background:var(--green-pale);border:2px solid var(--umber)}
+.def-card .t{font:500 16px var(--font-body);color:var(--ink)}
+.def-card .hpbar{width:100%;height:12px}
+
+/* 습격 기록 시트: 가운데 카드(폭 90%·높이 최대 70%), 제목 아래 본문 전체가 스크롤 */
+.bsheet.raid-sheet{left:5%;right:5%;top:0;bottom:0;margin:auto;height:fit-content;max-height:70%;border:4px solid var(--umber);box-shadow:0 6px 0 rgba(30,14,5,.6)}
+.bsheet.raid-sheet .grip{display:none}
+.bsheet.raid-sheet .bh{padding:12px 12px 8px 16px}
+.bsheet.raid-sheet .bb{flex:1 1 auto;overflow:hidden;padding:0}
+.raid-sheet .raid-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px;padding:4px 16px 20px}
+.raid-sheet .raid-scroll>*{flex:none}
+.point-box{border:2px solid var(--umber);background:var(--sc-low)}
+.point-toggle{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;padding:0 12px;font:400 15px var(--font-title);color:var(--ink);text-align:left}
+.point-toggle .chev{transition:transform var(--press)}
+.point-toggle[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.point-toggle .cnt{font-size:12px;color:var(--muted)}
+.point-box .point-log{margin:0;padding:8px 12px 10px;border-top:2px solid var(--umber);list-style:none}
+.raid-list{display:flex;flex-direction:column;gap:8px}
+.raid{display:flex;flex-direction:column;gap:6px;padding:10px;border:2px solid var(--umber);background:var(--sc-low)}
+.raid .t{font:500 14px var(--font-body);color:var(--ink)}
+.raid .loss{color:var(--err);font-size:15px}
+.point-log{display:flex;flex-direction:column;gap:4px;font:400 13px var(--font-body);color:var(--ink2)}
+.point-log .num{color:var(--green)}
+.point-log .num.minus{color:var(--err)}
+
+/* 필드 칸 시트: 목록 항목을 작게 해 낮은 화면에서도 위 카드·버튼이 보이게 */
+.def-list .home-char{padding:6px 10px 6px 6px}
+.def-list .home-char .pic{width:52px;height:52px}
+.def-list.sheet-scroll{max-height:min(28dvh,240px)}
+
+/* 습격 일정: 세로형(모바일·태블릿 세로)에서는 숨김, 가로형 오른쪽 패널에서만 보임 */
+.castle-panel .raid-plan{display:none;list-style:none;flex-direction:column;gap:4px;margin:0;padding:0}
+.raid-plan li{display:flex;align-items:center;gap:6px;padding:4px 6px;border:2px solid var(--umber);background:var(--sc-low);font:500 12px var(--font-body);color:var(--ink2)}
+.raid-plan li .when-l{flex:none;width:40px;font:400 13px var(--font-title);color:var(--ink)}
+.raid-plan li .who{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.raid-plan li .st{flex:none;font:700 11px var(--font-mono);color:var(--muted)}
+.raid-plan li.next{background:var(--berry-l);border-color:var(--berry)}
+.raid-plan li.next .st{color:var(--berry)}
+.raid-plan li.done{opacity:.55}
+
+/* 칸 사이 드래그: 끄는 동안 원래 칸은 비어 보이고, 놓을 칸은 금색 테두리, 캐릭터는 손가락 위에서 바둥거림 */
+.scene .tile.guard{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab}
+.scene .castle-field.dragging,.scene .castle-field.dragging .tile{cursor:grabbing}
+.scene .tile.lifted>*{opacity:.25}
+.scene .tile.over{outline:3px solid var(--gold);outline-offset:-3px;filter:brightness(1.18);z-index:1}
+.scene .drag-ghost{position:absolute;z-index:4;transform:translate(-50%,calc(-100% - 10px));pointer-events:none;}
+
+/* 칸 캐릭터: HP·별은 머리 위에 붙고, 칸보다 크면 위 칸으로 겹침 */
+.scene .tile .px,.scene .drag-ghost .px{flex:none}
+.scene .tile.guard .tile-hud{position:static;transform:none;margin-bottom:2px}
+/* 1행 캐릭터가 위로 넘칠 때 HP·별이 성 뒤로 숨지 않게 필드를 성보다 앞에 둠 */
+.scene .board-wrap{position:relative;z-index:2}
+.scene .tile.blocked{background:transparent;cursor:default;pointer-events:none}
+.enemy-img{display:block;flex:none;image-rendering:pixelated}
+/* 성 모드 캐릭터(32칸×4.5)의 90% */
+.scene .enemy-img.fluid{width:calc(var(--px) * 129.6);height:calc(var(--px) * 129.6)}
+
+/* 모바일 세로 모드(사용자 요청 2026-11-20): 성 모드 하단 요소를 세로 80%로 줄이되, 가로는 줄이지 않고 타일 판(좌우 12px)과 끝을 맞춤.
+   배율 대신 버튼·칩·카드 높이와 글자를 직접 줄임 → 패널 높이는 아래 필드 하단 여백과 같이 조정 */
+@media (orientation:portrait){
+  :root:not([data-tablet]) .scene .castle-panel{gap:8px}
+  :root:not([data-tablet]) .castle-panel .pts{height:28px;padding:0 8px}
+  :root:not([data-tablet]) .castle-panel .pts .num{font-size:14px}
+  :root:not([data-tablet]) .castle-panel .chip{height:28px;padding:0 10px;font-size:12px}
+  :root:not([data-tablet]) .castle-panel .tag.mono{height:20px;padding:0 6px;font-size:10px}
+  :root:not([data-tablet]) .castle-panel .next{gap:8px;padding:4px 8px}
+  :root:not([data-tablet]) .castle-panel .next .lbl{font-size:10px}
+  :root:not([data-tablet]) .castle-panel .next .t{font-size:13px}
+  :root:not([data-tablet]) .castle-panel .next .when{font-size:14px}
+  :root:not([data-tablet]) .castle-panel .next .foes img,:root:not([data-tablet]) .castle-panel .next .foes svg{width:28px;height:28px}
+  :root:not([data-tablet]) .castle-panel .acts .btn.sm{height:32px;font-size:14px;padding:0 10px;gap:6px}
+  :root:not([data-tablet]) .scene.castle-mode .field{bottom:137px}
+}
